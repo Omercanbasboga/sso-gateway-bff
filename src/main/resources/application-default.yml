@@ -1,0 +1,100 @@
+server:
+  port: 8082
+
+spring:
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      httpserver:
+        websocket:
+          max-frame-payload-length: 1048576
+          compression: true
+      httpclient:
+        websocket:
+          max-frame-payload-length: 1048576
+          compression: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+      # Every downstream service is a real, independently deployable microservice.
+      # TokenRelay forwards the caller's OAuth2 access token to it unchanged, so
+      # each service does its own token validation instead of trusting the gateway.
+      routes:
+        - id: core-api
+          uri: ${CORE_API_URI:http://localhost:9000}
+          predicates:
+            - Path=/api/oauth2/userinfo/**
+          filters:
+            - TokenRelay=
+            - StripPrefix=1
+
+        - id: profiles-api
+          uri: ${PROFILES_API_URI:http://profiles-service:8060}
+          predicates:
+            - Path=/api/profile/**
+          filters:
+            - TokenRelay=
+            - StripPrefix=1
+
+        - id: userinfo-api
+          uri: ${USERINFO_API_URI:http://localhost:8082}
+          predicates:
+            - Path=/api/userinfo/**
+          filters:
+            - TokenRelay=
+            - StripPrefix=1
+
+        - id: sessions-api
+          uri: ${SESSIONS_API_URI:http://sessions-service:8090}
+          predicates:
+            - Path=/v1/sessions/**
+          filters:
+            - TokenRelay=
+
+        - id: core-resource-api
+          uri: ${CORE_API_URI:http://localhost:9000}
+          predicates:
+            - Path=/api/**
+          filters:
+            - TokenRelay=
+            - StripPrefix=1
+
+        - id: ui
+          uri: ${UI_URI:http://localhost:3002}
+          predicates:
+            - Path=/**
+
+  security:
+    oauth2:
+      client:
+        registration:
+          # authorization_code flow: interactive login for a human user
+          sso-gateway:
+            provider: oauth2
+            client-id: ${OAUTH2_CLIENT_ID}
+            client-secret: ${OAUTH2_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: "${APP_BASE_URI:http://localhost:8082}/login/oauth2/code/sso-gateway"
+            scope: openid,profile,system:config
+            client-name: SSO Gateway BFF
+            client-authentication-method: client_secret_post
+
+          # client_credentials flow: service-to-service calls the gateway makes on its own behalf
+          client_token:
+            provider: oauth2
+            client-id: ${OAUTH2_CLIENT_ID}
+            client-secret: ${OAUTH2_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+            scope: openid,system:config
+            client-name: SSO Gateway BFF
+            client-authentication-method: client_secret_post
+
+        provider:
+          oauth2:
+            issuer-uri: ${OAUTH2_ISSUER_URI:https://your-identity-provider.example.com}
+            user-name-attribute: sub
+
+app:
+  base-uri: ${APP_BASE_URI:http://localhost:8082}
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3002}
