@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .message {
+            font-size: 18px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.5;
+            color: #E6E6FA;
+        }
+
+        .error-box {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid #FF6B6B;
+            border-radius: 8px;
+            padding: 16px 24px;
+            margin-bottom: 30px;
+            max-width: 500px;
+            color: #FFD7D7;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 0 10px;
+            background: #FF6B6B;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: 2px solid #FF6B6B;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #ea3838;
+            border-color: #e62d2d;
+        }
+
+        .footer {
+            background: rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">SSO Gateway</div>
+
+<div class="content">
+    <div class="title">Sign in to continue</div>
+    <div class="message">
+        You'll be redirected to your organization's identity provider to sign in.
+    </div>
+
+    <div class="error-box" th:if="${errorMessage}">
+        <span th:text="${errorMessage}">Invalid username or password!</span>
+    </div>
+
+    <a href="/oauth2/authorization/sso-gateway" class="btn">Sign in with SSO</a>
+</div>
+
+<div class="footer">
+    sso-gateway-bff &mdash; reactive OAuth2/OIDC gateway (portfolio project)
+</div>
+</body>
+</html>
